@@ -1,0 +1,6 @@
+mysql:
+  charset: utf8
+  db: gomega
+  host: localhost
+  password: root4321
+  user: root
