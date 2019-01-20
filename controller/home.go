@@ -3,17 +3,22 @@ package controller
 import (
 	"log"
 	"net/http"
-	// "fmt"
-    "github.com/wuchuwuyou/go-web-demo/vm"
+	"fmt"
+	"github.com/wuchuwuyou/go-web-demo/vm"
+	"github.com/gorilla/mux"
 )
 
 type home struct{}
 
 func (h home) registerRoutes() {
-	http.HandleFunc("/", middleAuth(indexHandler))
-	http.HandleFunc("/login",loginHandler)
-	http.HandleFunc("/logout", middleAuth(logoutHandler))
-	http.HandleFunc("/register",registerHandler)
+	r := mux.NewRouter()
+	r.HandleFunc("/", middleAuth(indexHandler))
+	r.HandleFunc("/login",loginHandler)
+	r.HandleFunc("/logout", middleAuth(logoutHandler))
+	r.HandleFunc("/register",registerHandler)
+	r.HandleFunc("/user/{username}",middleAuth(profileHandler))
+	r.HandleFunc("/profile_edit",middleAuth(profileEditHandler))
+	http.Handle("/",r)
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -78,6 +83,48 @@ func registerHandler(w http.ResponseWriter,r *http.Request) {
 		}
 	}
 }
+
+func profileHandler(w http.ResponseWriter, r *http.Request) {
+	tpName := "profile.html"
+	vars := mux.Vars(r)
+	pUser := vars["username"]
+	sUser, _ := getSessionUser(r)
+	vop := vm.ProfileViewModelOp{}
+	v,err := vop.GetVM(sUser,pUser)
+	if err != nil {
+		msg := fmt.Sprintf("user ( %s ) does not exist", pUser)
+		w.Write([]byte(msg))
+		return
+	}
+	templates[tpName].Execute(w,&v)
+}
+
+func profileEditHandler(w http.ResponseWriter, r *http.Request) {
+	tpName := "profile_edit.html"
+	username,_ := getSessionUser(r)
+	vop := vm.ProfileEditViewModelOp{}
+	v := vop.GetVM(username)
+
+	if r.Method == http.MethodGet {
+		err := templates[tpName].Execute(w,&v)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
+	if r.Method == http.MethodPost {
+		r.ParseForm()
+		aboutme := r.Form.Get("aboutme")
+		log.Println(aboutme)
+		if err := vm.UpdateAboutMe(username, aboutme); err != nil {
+			log.Println("update Aboutme error:",err)
+			w.Write([]byte("Error update abouteme"))
+			return
+		}
+		http.Redirect(w,r,fmt.Sprintf("/user/%s",username),http.StatusSeeOther)
+	}
+}
+
 
 func check(username,password string) bool {
 	if username == "123456" && password == "123456" {
