@@ -1,6 +1,9 @@
 package vm
 
-import "github.com/wuchuwuyou/go-web-demo/model"
+import (
+	"log"
+	"github.com/wuchuwuyou/go-web-demo/model"
+)
 
 // IndexViewModel struct
 type IndexViewModel struct {
@@ -16,8 +19,11 @@ type IndexViewModelOp struct{}
 func (IndexViewModelOp) GetVM(username string) IndexViewModel {
     u1,_ := model.GetUserByUsername(username)
 
-    posts,_ := model.GetPostsByUserID(u1.ID)
-
+    posts,err := model.GetPostsByUserID(u1.ID)
+    // if err != nil {
+        log.Println("get user post error:%s", err)
+    //     return 
+    // }
     v := IndexViewModel{BaseViewModel{Title: "Homepage"}, *u1, *posts}
     v.SetCurrentUser(username)
     return v

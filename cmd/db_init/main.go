@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	_"fmt"
 	"log"
 	"github.com/wuchuwuyou/go-web-demo/model"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -13,32 +13,19 @@ func main()  {
 	defer db.Close()
 	model.SetDB(db)
 
-	db.DropTableIfExists(model.User{},model.Post{})
-	db.CreateTable(model.User{},model.Post{})
+	db.DropTableIfExists(model.User{}, model.Post{}, "follower")
+	db.CreateTable(model.User{}, model.Post{})
 
-	users := []model.User {
-		{
-			Username : "murphy",
-			PasswordHash: model.GeneratePasswordHash("abc123"),
-			Email: "murphy@murphy.com",
-			Avatar: fmt.Sprintf("https://www.gravatar.com/avatar/%s?d=identicon", model.Md5("murphy@murphy.com")),
-			Posts: []model.Post{
-				{Body:"Have a nice day!"},
-			},
-		},
-		{
-			Username:     "rene",
-            PasswordHash: model.GeneratePasswordHash("abc123"),
-			Email:        "rene@test.com",
-			Avatar:       fmt.Sprintf("https://www.gravatar.com/avatar/%s?d=identicon", model.Md5("rene@test.com")),
-            Posts: []model.Post{
-                {Body: "The Avengers movie was so cool!"},
-                {Body: "Sun shine is beautiful"},
-            },
-		},
-	}
-	
-	for _, u := range users {
-		db.Debug().Create(&u)
-	}
+	model.AddUser("bonfy", "abc123", "i@bonfy.im")
+	model.AddUser("rene", "abc123", "rene@test.com")
+
+	u1, _ := model.GetUserByUsername("bonfy")
+	u1.CreatePost("Beautiful day in Portland!")
+	model.UpdateAboutMe(u1.Username, `I'm the author of Go-Mega Tutorial you are reading now!`)
+
+	u2, _ := model.GetUserByUsername("rene")
+	u2.CreatePost("The Avengers movie was so cool!")
+	u2.CreatePost("Sun shine is beautiful")
+
+	u1.Follow(u2.Username)
 }

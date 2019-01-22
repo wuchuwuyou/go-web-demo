@@ -9,6 +9,9 @@ type ProfileViewModel struct {
 	Posts []model.Post
 	ProfileUser model.User
 	Editable bool
+	IsFollow bool
+	FollowersCount int
+	FollowingCount int
 }
 
 type ProfileViewModelOp struct {}
@@ -23,7 +26,30 @@ func (ProfileViewModelOp) GetVM(sUser,pUser string) (ProfileViewModel,error) {
 	posts,_ := model.GetPostsByUserID(u1.ID)
 	v.ProfileUser = *u1
 	v.Editable = (sUser == pUser)
+	if !v.Editable {
+		v.IsFollow = u1.IsFollowedByUser(sUser)
+	}
+	v.FollowersCount = u1.FollowersCount()
+	v.FollowingCount = u1.FollowingCount()
 	v.Posts = *posts
 	v.SetCurrentUser(sUser)
 	return v,nil
+}
+
+// Follow func : A follow B
+func Follow(a, b string) error {
+	u, err := model.GetUserByUsername(a)
+	if err != nil {
+		return err
+	}
+	return u.Follow(b)
+}
+
+// UnFollow func : A unfollow B
+func UnFollow(a, b string) error {
+	u, err := model.GetUserByUsername(a)
+	if err != nil {
+		return err
+	}
+	return u.Unfollow(b)
 }
