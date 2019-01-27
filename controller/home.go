@@ -20,15 +20,36 @@ func (h home) registerRoutes() {
 	r.HandleFunc("/profile_edit",middleAuth(profileEditHandler))
 	r.HandleFunc("/follow/{username}", middleAuth(followHandler))
 	r.HandleFunc("/unfollow/{username}", middleAuth(unFollowHandler))
+	r.HandleFunc("/explore", middleAuth(exploreHandler))
 	http.Handle("/",r)
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	tpName := "index.html"
 	vop := vm.IndexViewModelOp{}
+	page := getPage(r)
 	username,_ := getSessionUser(r)
-    v := vop.GetVM(username)
-    templates[tpName].Execute(w, &v)
+	if r.Method == http.MethodGet {
+		flash := getFlash(w,r)
+		v := vop.GetVM(username,flash,page,pageLimit)
+		templates[tpName].Execute(w,&v)
+	}
+	if r.Method == http.MethodPost {
+		r.ParseForm()
+		body := r.Form.Get("body")
+		errMessage := checkLen("Post",body,1,180)
+		if errMessage != "" {
+			setFlash(w,r,errMessage)
+		}else {
+			err := vm.CreatePost(username,body)
+			if err != nil {
+				log.Println("add post error:",err)
+				w.Write([]byte("Error insert Post in database"))
+				return
+			}
+		}
+		http.Redirect(w,r,"/",http.StatusSeeOther)
+	}
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -91,8 +112,9 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	pUser := vars["username"]
 	sUser, _ := getSessionUser(r)
+	page := getPage(r)
 	vop := vm.ProfileViewModelOp{}
-	v,err := vop.GetVM(sUser,pUser)
+	v,err := vop.GetVM(sUser,pUser,page,pageLimit)
 	if err != nil {
 		msg := fmt.Sprintf("user ( %s ) does not exist", pUser)
 		w.Write([]byte(msg))
@@ -167,4 +189,13 @@ func unFollowHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, fmt.Sprintf("/user/%s", pUser), http.StatusSeeOther)
+}
+
+func exploreHandler(w http.ResponseWriter, r *http.Request) {
+	tpName := "explore.html"
+	vop := vm.ExploreViewModelOp{}
+	username, _ := getSessionUser(r)
+	page := getPage(r)
+	v := vop.GetVM(username, page, pageLimit)
+	templates[tpName].Execute(w, &v)
 }

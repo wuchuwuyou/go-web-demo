@@ -1,30 +1,36 @@
 package vm
 
 import (
-	"log"
+	_"log"
 	"github.com/wuchuwuyou/go-web-demo/model"
 )
 
 // IndexViewModel struct
 type IndexViewModel struct {
     BaseViewModel
-    model.User
     Posts []model.Post
+    Flash string
+    BasePageViewModel
 }
 
 // IndexViewModelOp struct
 type IndexViewModelOp struct{}
 
 // GetVM func
-func (IndexViewModelOp) GetVM(username string) IndexViewModel {
+func (IndexViewModelOp) GetVM(username string, flash string,page,limit int) IndexViewModel {
     u1,_ := model.GetUserByUsername(username)
 
-    posts,err := model.GetPostsByUserID(u1.ID)
-    // if err != nil {
-        log.Println("get user post error:%s", err)
-    //     return 
-    // }
-    v := IndexViewModel{BaseViewModel{Title: "Homepage"}, *u1, *posts}
+    posts,total,_ := u1.FollowingPostsByPageAndLimit(page,limit)
+    v := IndexViewModel{}
+    v.SetTitle("Homepage")
+    v.Posts = *posts
+    v.Flash = flash
+    v.SetBasePageViewModel(total,page,limit)
     v.SetCurrentUser(username)
     return v
+}
+
+func CreatePost(username,post string) error {
+    u,_ := model.GetUserByUsername(username)
+    return u.CreatePost(post)
 }

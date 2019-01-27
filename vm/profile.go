@@ -7,25 +7,27 @@ import (
 type ProfileViewModel struct {
 	BaseViewModel
 	Posts []model.Post
-	ProfileUser model.User
 	Editable bool
 	IsFollow bool
 	FollowersCount int
 	FollowingCount int
+	ProfileUser model.User
+	BasePageViewModel
 }
 
 type ProfileViewModelOp struct {}
 
-func (ProfileViewModelOp) GetVM(sUser,pUser string) (ProfileViewModel,error) {
+func (ProfileViewModelOp) GetVM(sUser,pUser string,page,limit int) (ProfileViewModel,error) {
 	v := ProfileViewModel{}
 	v.SetTitle("Profile")
 	u1,err := model.GetUserByUsername(pUser)
 	if err != nil {
 		return v,err
 	}	
-	posts,_ := model.GetPostsByUserID(u1.ID)
+	posts,total,_ := model.GetPostsByUserIDPageAndLimit(u1.ID,page,limit)
 	v.ProfileUser = *u1
 	v.Editable = (sUser == pUser)
+	v.SetBasePageViewModel(total,page,limit)
 	if !v.Editable {
 		v.IsFollow = u1.IsFollowedByUser(sUser)
 	}
