@@ -112,7 +112,7 @@ func checkPassword(password string) string {
 }
 
 func checkEmail(email string) string {
-    if m,_ := regexp.MatchString(`^([\w\.\_]{2,10})@(\w{1,}).([a-z]{2,4})$`, email); !m {
+    if m,_ := regexp.MatchString(`^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$`, email); !m {
         return fmt.Sprintf("Email field not a valid email")
     }
     return ""
@@ -234,6 +234,7 @@ func sendEmail(target,subject,content string) {
         log.Println("Email Error:",err)
         return
     }
+    log.Println("发送成功")
 }
 
 func checkResetPasswordRequest(email string) []string {
