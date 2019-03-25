@@ -39,3 +39,7 @@ func GetPostsByPageAndLimit(page,limit int) (*[]Post,int,error) {
     db.Model(&Post{}).Count(&total)
     return &posts,total,nil
 }
+
+func (p *Post) FormattedTimeAgo() string {
+    return FromTime(*p.Timestamp)
+}
