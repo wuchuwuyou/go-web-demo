@@ -69,6 +69,7 @@ func GetHerokuConnectingString() string {
 // GetDBType func
 func GetDBType() string {
 	dbtype := os.Getenv("DBTYPE")
+	log.Println("DB Type:", dbtype)
 	return dbtype
 }
 
