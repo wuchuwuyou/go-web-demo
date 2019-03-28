@@ -14,7 +14,7 @@
         <ul class="pagination justify-content-center">
             {{ if gt .PrevPage 0 }}
                 <li class="page-item">
-                    <a href="/user/{{.ProfileUser.Username}}?page={{.PrevPage}}">
+                    <a href="/user/{{.User.Username}}?page={{.PrevPage}}">
                         <span class="page-link" aria-hidden="true">&larr; Newer Posts</span>
                     </a>
                 </li>
@@ -27,7 +27,7 @@
             {{ end }}
             {{ if gt .NextPage 0 }}
                 <li class="page-item">
-                    <a href="/user/{{.ProfileUser.Username}}?page={{.NextPage}}">
+                    <a href="/user/{{.User.Username}}?page={{.NextPage}}">
                         <span class="page-link" aria-hidden="true">Older Posts &rarr;</span>
                     </a>
                 </li>

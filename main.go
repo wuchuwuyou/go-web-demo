@@ -22,5 +22,10 @@ func main()  {
 	//http.ListenAndServe(":8888",context.ClearHandler(http.DefaultServeMux))
 	port := os.Getenv("PORT")
 	log.Println("Running on port: ", port)
-	http.ListenAndServe(":"+port,context.ClearHandler(http.DefaultServeMux))
+	if len(port) > 0 {
+		http.ListenAndServe(":"+port,context.ClearHandler(http.DefaultServeMux))
+	}else {
+		http.ListenAndServe(":8888",context.ClearHandler(http.DefaultServeMux))
+	}
+	//http.ListenAndServe(":"+port,context.ClearHandler(http.DefaultServeMux))
 }
