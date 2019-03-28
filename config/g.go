@@ -9,7 +9,7 @@ import (
 )
 
 func init()  {
-	projectName := "go-mega"
+	projectName := "go-web-demo"
 	dbType := GetDBType()
 	log.Println("OS DBTYPE:",dbType)
 	if IsHeroku() {
