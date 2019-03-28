@@ -1,10 +1,9 @@
 package model
 
 import (
-	"log"
-	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/wuchuwuyou/go-web-demo/config"
+	"log"
 )
 
 var db *gorm.DB
@@ -14,12 +13,16 @@ func SetDB(database *gorm.DB)  {
 }
 
 func ConnectToDB() *gorm.DB {
-	connectingStr := config.GetMysqlConnectingString()
-	fmt.Println(connectingStr)
-	log.Println("Connet to DB...")
-	db,err := gorm.Open("mysql",connectingStr)
+	if config.IsHeroku() {
+		return ConnectToDBByDBType("postgres", config.GetHerokuConnectingString())
+	}
+	return ConnectToDBByDBType("mysql", config.GetMysqlConnectingString())
+}
+
+func ConnectToDBByDBType(dbtype, connectingStr string) *gorm.DB {
+	log.Println("DB Type:", dbtype, "\nConnet to db...")
+	db, err := gorm.Open(dbtype, connectingStr)
 	if err != nil {
-		fmt.Println(err)
 		panic("Failed to connect database")
 	}
 	db.SingularTable(true)
